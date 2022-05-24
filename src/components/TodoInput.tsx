@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
 interface TodoInputProps {

@@ -5,29 +5,28 @@ import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
 import { TodoInput } from '../components/TodoInput';
 
+export type EditTaskArgs = {
+  taskId: number;
+  taskNewTitle: string;
+}
+
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
   function handleAddTask(newTaskTitle: string) {
-    let taskFound: boolean = false;
-    const AllTasks = tasks.map(task => ({ ...task }));
+    const alreadyExistingTask = tasks.find(task => task.title.toLowerCase() === newTaskTitle.toLowerCase());
 
-    AllTasks.find((task) => {
-      if(task.title.toLowerCase() === newTaskTitle.toLowerCase()) {
-        Alert.alert('Task já cadastrada!', 'Você não pode cadastrar uma task com o mesmo nome.');
-        taskFound = !taskFound;
-      }
-    });
-
-    if (!taskFound) {
-      const dataNewTask = {
-        id: new Date().getTime(),
-        title: newTaskTitle,
-        done: false
-      }
-
-      setTasks(oldTasks => [...oldTasks, dataNewTask]);
+    if(alreadyExistingTask) {
+      return Alert.alert('Task já cadastrada!', 'Você não pode cadastrar uma task com o mesmo nome.');
     }
+
+    const dataNewTask = {
+      id: new Date().getTime(),
+      title: newTaskTitle,
+      done: false
+    }
+
+    setTasks(oldTasks => [...oldTasks, dataNewTask]);
   }
 
   function handleToggleTaskDone(id: number) {
@@ -37,7 +36,25 @@ export function Home() {
       if (task.id === id) {
         task.done = !task.done
       }
-    })
+    });
+
+    setTasks([...updatedTasks]);
+  }
+
+  function handleEditTask({taskId, taskNewTitle} : EditTaskArgs) {
+    const alreadyExistingTask = tasks.find(task => task.title === taskNewTitle);
+  
+    if(alreadyExistingTask) {
+      return Alert.alert('Task já cadastrada!', 'Você não pode cadastrar uma task com o mesmo nome.');
+    }
+
+    const updatedTasks = tasks.map(task => ({ ...task }));
+
+    updatedTasks.find((task) => {
+      if (task.id === taskId) {
+        task.title = taskNewTitle;
+      }
+    });
 
     setTasks([...updatedTasks]);
   }
@@ -53,16 +70,15 @@ export function Home() {
         },
         {
           text: 'Sim',
-          onPress: remove
+          style: 'destructive',
+          onPress: () => {
+            setTasks(oldTasks => oldTasks.filter(
+              task => task.id !== id
+            ));
+          }
         }
       ]
     );
-
-    function remove() {
-      setTasks(oldTasks => oldTasks.filter(
-        task => task.id !== id
-      ));
-    }
   }
 
   return (
@@ -74,6 +90,7 @@ export function Home() {
       <TasksList 
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
+        editTask={() => handleEditTask}
         removeTask={handleRemoveTask} 
       />
     </View>
